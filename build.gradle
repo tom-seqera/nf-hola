@@ -1,8 +1,5 @@
-apply plugin: NextflowPlugin
+apply plugin: io.nextflow.gradle.NextflowPlugin
 
 dependencies {
-    compileOnly "io.nextflow:nextflow:24.11-edge"
-    compileOnly 'org.pf4j:pf4j:3.4.1'
-
     implementation 'commons-lang:commons-lang:2.6'
 }

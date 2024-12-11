@@ -7,3 +7,6 @@ clean:
 assemble:
 	./gradlew assemble
 
+install:
+	./gradlew install
+
