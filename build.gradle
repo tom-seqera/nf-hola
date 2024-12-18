@@ -3,3 +3,15 @@ apply plugin: io.nextflow.gradle.NextflowPlugin
 dependencies {
     implementation 'commons-lang:commons-lang:2.6'
 }
+
+version = '0.0.3'
+
+nextflow {
+    requireVersion = '24.11.0-edge'
+
+    plugin {
+        publisher = 'nextflow'
+        className = 'com.example.ExamplePlugin'
+        requirePlugins = ['nf-amazon@>=2.5.1']
+    }
+}

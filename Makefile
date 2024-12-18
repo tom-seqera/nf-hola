@@ -4,9 +4,10 @@ clean:
 	rm -rf build
 	./gradlew clean
 
+# Build the plugin
 assemble:
 	./gradlew assemble
 
+# Install the plugin into local nextflow plugins dir
 install:
 	./gradlew install
-

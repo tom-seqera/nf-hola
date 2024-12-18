@@ -3,6 +3,9 @@ package io.nextflow.gradle.task
 import groovy.json.JsonOutput
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
 import java.security.MessageDigest
@@ -13,32 +16,42 @@ import java.time.format.DateTimeFormatter
  * Gradle task to create the Nextflow plugin metadata file
  */
 class MetadataTask extends DefaultTask {
-    private final String zipPath
-    private final String metaPath
+    @InputFile
+    final RegularFileProperty inputFile
+    @OutputFile
+    final RegularFileProperty outputFile
 
     MetadataTask() {
         group = 'Nextflow'
+
         dependsOn project.tasks.packagePlugin
 
-        // define inputs and outputs
         final buildDir = project.layout.buildDirectory.get()
-        zipPath = "${buildDir}/libs/${project.name}-${project.version}.zip"
-        metaPath = "$buildDir/libs/${project.name}-${project.version}-meta.json"
+        inputFile = project.objects.fileProperty()
+        inputFile.convention(project.provider {
+            buildDir.file("libs/${project.name}-${project.version}.zip")
+        })
 
-        inputs.file(zipPath)
-        outputs.file(metaPath)
+        outputFile = project.objects.fileProperty()
+        outputFile.convention(project.provider {
+            buildDir.file("libs/${project.name}-${project.version}-meta.json")
+        })
     }
 
     @TaskAction
     void run() {
+        // TODO make configurable
+        final githubOrg = 'nexflow-io'
+
+        final extension = project.extensions.nextflow
         final metadata = [
-                version: "${project.version}",
-                date: OffsetDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME),
-                url: "TODO url",
-                requires: "TODO requires",
-                sha512sum: computeSha512(project.file(zipPath))
+            version  : "${project.version}",
+            date     : OffsetDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME),
+            url      : "https://github.com/${githubOrg}/${project.name}/releases/download/${project.version}/${project.name}-${project.version}.zip",
+            requires : ">=${extension.requireVersion}",
+            sha512sum: computeSha512(project.file(inputFile))
         ]
-        project.file(metaPath).text = JsonOutput.prettyPrint(JsonOutput.toJson(metadata))
+        project.file(outputFile).text = JsonOutput.prettyPrint(JsonOutput.toJson(metadata))
     }
 
     private static String computeSha512(File file) {
