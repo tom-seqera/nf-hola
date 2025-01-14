@@ -1,6 +1,7 @@
 package io.nextflow.gradle
 
 import io.nextflow.gradle.task.InstallTask
+import io.nextflow.gradle.task.Manifest
 import io.nextflow.gradle.task.MetadataTask
 import io.nextflow.gradle.task.PackageTask
 import org.gradle.api.Plugin
@@ -8,6 +9,8 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.JavaLibraryPlugin
 import org.gradle.api.tasks.compile.GroovyCompile
+import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.jvm.tasks.Jar
 
 /**
  * A gradle plugin for nextflow plugin projects.
@@ -27,6 +30,10 @@ class NextflowPlugin implements Plugin<Project> {
         project.plugins.apply(GroovyPlugin)
         project.plugins.apply(JavaLibraryPlugin)
 
+        project.tasks.withType(JavaCompile).each { task ->
+            task.sourceCompatibility = 17
+            task.targetCompatibility = 17
+        }
         project.tasks.withType(GroovyCompile).each { task ->
             task.sourceCompatibility = 17
             task.targetCompatibility = 17
@@ -47,6 +54,14 @@ class NextflowPlugin implements Plugin<Project> {
                 compileOnly 'org.slf4j:slf4j-api:1.7.10'
                 compileOnly 'org.pf4j:pf4j:3.4.1'
             }
+        }
+
+        // -----------------------------
+        // Custom jar manifest
+        // -----------------------------
+        project.afterEvaluate {
+            def manifest = new Manifest(project)
+            project.tasks.withType(Jar).each(manifest::manifest)
         }
 
         // -----------------------------

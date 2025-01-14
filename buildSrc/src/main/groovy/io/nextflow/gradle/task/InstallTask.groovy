@@ -11,13 +11,12 @@ class InstallTask extends Copy {
     InstallTask() {
         group = 'Nextflow'
         description = 'Install this plugin into your local Nextflow plugins dir'
-
         dependsOn project.tasks.assemble
 
         final buildDir = project.layout.buildDirectory.get()
         def (pluginsDir, reason) = getNextflowPluginsDir()
 
-        from(project.zipTree("${buildDir}/libs/${project.name}-${project.version}.zip"))
+        from(project.zipTree("${buildDir}/distributions/${project.name}-${project.version}.zip"))
         into("${pluginsDir}/${project.name}-${project.version}")
 
         doLast {

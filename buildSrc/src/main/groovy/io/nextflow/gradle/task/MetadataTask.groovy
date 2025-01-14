@@ -29,12 +29,12 @@ class MetadataTask extends DefaultTask {
         final buildDir = project.layout.buildDirectory.get()
         inputFile = project.objects.fileProperty()
         inputFile.convention(project.provider {
-            buildDir.file("libs/${project.name}-${project.version}.zip")
+            buildDir.file("distributions/${project.name}-${project.version}.zip")
         })
 
         outputFile = project.objects.fileProperty()
         outputFile.convention(project.provider {
-            buildDir.file("libs/${project.name}-${project.version}-meta.json")
+            buildDir.file("distributions/${project.name}-${project.version}-meta.json")
         })
     }
 
