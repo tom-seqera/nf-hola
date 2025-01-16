@@ -49,13 +49,30 @@ class NextflowPlugin implements Plugin<Project> {
         }
 
         project.afterEvaluate {
+            final nextflowVersion = extension.requireVersion
+
             project.dependencies {
                 // required compile-time dependencies for nextflow plugins
-                compileOnly "io.nextflow:nextflow:${extension.requireVersion}"
-                compileOnly 'org.slf4j:slf4j-api:1.7.10'
-                compileOnly 'org.pf4j:pf4j:3.4.1'
+                compileOnly "io.nextflow:nextflow:${nextflowVersion}"
+                compileOnly "org.slf4j:slf4j-api:1.7.10"
+                compileOnly "org.pf4j:pf4j:3.4.1"
+
+                // see https://docs.gradle.org/4.1/userguide/dependency_management.html#sec:module_replacement
+                modules {
+                    module("commons-logging:commons-logging") { replacedBy("org.slf4j:jcl-over-slf4j") }
+                }
+
+                // test-only dependencies (for writing tests)
+                testImplementation "org.apache.groovy:groovy:4.0.18"
+                testImplementation "io.nextflow:nextflow:${nextflowVersion}"
+                testImplementation ("org.spockframework:spock-core:2.3-groovy-4.0") { exclude group: 'org.codehaus.groovy'; exclude group: 'net.bytebuddy' }
+                testImplementation ('org.spockframework:spock-junit4:2.3-groovy-4.0') { exclude group: 'org.codehaus.groovy'; exclude group: 'net.bytebuddy' }
+//                testImplementation(testFixtures("io.nextflow:nextflow:${nextflowVersion}"))
+//                testImplementation(testFixtures("io.nextflow:nf-commons:${nextflowVersion}"))
             }
         }
+        // use JUnit 5 platform
+        project.test.useJUnitPlatform()
 
         // -----------------------------
         // Custom jar manifest

@@ -8,6 +8,10 @@ clean:
 assemble:
 	./gradlew assemble
 
+# Run plugin unit tests
+test:
+	./gradlew test
+
 # Install the plugin into local nextflow plugins dir
 install:
 	./gradlew install
