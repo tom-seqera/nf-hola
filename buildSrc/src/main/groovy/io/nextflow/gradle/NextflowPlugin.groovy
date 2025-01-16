@@ -1,5 +1,6 @@
 package io.nextflow.gradle
 
+import io.nextflow.gradle.task.ExtensionPointsTask
 import io.nextflow.gradle.task.InstallTask
 import io.nextflow.gradle.task.Manifest
 import io.nextflow.gradle.task.MetadataTask
@@ -67,16 +68,26 @@ class NextflowPlugin implements Plugin<Project> {
         // -----------------------------
         // Custom tasks
         // -----------------------------
+        // extensionPoints - generates extensions.idx file
+        project.tasks.register('extensionPoints', ExtensionPointsTask)
+        project.tasks.jar.dependsOn << project.tasks.extensionPoints
+
         // packagePlugin - builds the zip file
         project.tasks.register('packagePlugin', PackageTask)
+        project.tasks.packagePlugin.dependsOn << [
+            project.tasks.extensionPoints,
+            project.tasks.classes
+        ]
         project.tasks.assemble.dependsOn << project.tasks.packagePlugin
 
         // generateMeta - creates the meta.json file
         project.tasks.register('generateMeta', MetadataTask)
+        project.tasks.generateMeta.dependsOn << project.tasks.packagePlugin
         // TODO should be part of publish, not assemble
         project.tasks.assemble.dependsOn << project.tasks.generateMeta
 
         // installPlugin - installs plugin to (local) nextflow plugins dir
         project.tasks.register('installPlugin', InstallTask)
+        project.tasks.installPlugin.dependsOn << project.tasks.assemble
     }
 }

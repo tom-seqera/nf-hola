@@ -1,7 +1,7 @@
 package io.nextflow.gradle.task
 
-import org.gradle.api.tasks.Copy
 
+import org.gradle.api.tasks.Copy
 
 /**
  * Gradle task which 'installs' (copies) this Nextflow plugin into
@@ -11,13 +11,14 @@ class InstallTask extends Copy {
     InstallTask() {
         group = 'Nextflow'
         description = 'Install this plugin into your local Nextflow plugins dir'
-        dependsOn project.tasks.assemble
 
         final buildDir = project.layout.buildDirectory.get()
         def (pluginsDir, reason) = getNextflowPluginsDir()
 
-        from(project.zipTree("${buildDir}/distributions/${project.name}-${project.version}.zip"))
-        into("${pluginsDir}/${project.name}-${project.version}")
+        project.afterEvaluate {
+            from(project.zipTree("${buildDir}/distributions/${project.name}-${project.version}.zip"))
+            into("${pluginsDir}/${project.name}-${project.version}")
+        }
 
         doLast {
             println "Plugin ${project.name} installed successfully!"

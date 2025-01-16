@@ -63,5 +63,10 @@ class NextflowExtension {
          * (optional)
          */
         List<String> requirePlugins = []
+
+        /**
+         * List of extension points provided by the plugin.
+         */
+        List<String> extensionPoints = []
     }
 }

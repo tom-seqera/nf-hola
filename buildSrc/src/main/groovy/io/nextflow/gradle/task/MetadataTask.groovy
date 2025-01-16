@@ -24,8 +24,6 @@ class MetadataTask extends DefaultTask {
     MetadataTask() {
         group = 'Nextflow'
 
-        dependsOn project.tasks.packagePlugin
-
         final buildDir = project.layout.buildDirectory.get()
         inputFile = project.objects.fileProperty()
         inputFile.convention(project.provider {

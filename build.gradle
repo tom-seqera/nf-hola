@@ -7,11 +7,16 @@ dependencies {
 version = '0.0.3'
 
 nextflow {
-    requireVersion = '24.11.0-edge'
+    requireVersion = '24.10.2'
 
     plugin {
         publisher = 'nextflow'
         className = 'com.example.ExamplePlugin'
-        requirePlugins = ['nf-amazon@>=2.5.1']
+//        requirePlugins = ['nf-amazon@>=2.5.1']
+
+        extensionPoints = [
+            'com.example.ExampleFunctions',
+            'com.example.ExampleObserver'
+        ]
     }
 }
