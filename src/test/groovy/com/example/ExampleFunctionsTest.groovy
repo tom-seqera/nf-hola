@@ -1,4 +1,5 @@
-import com.example.ExampleFunctions
+package com.example
+
 import nextflow.Session
 import spock.lang.Specification
 

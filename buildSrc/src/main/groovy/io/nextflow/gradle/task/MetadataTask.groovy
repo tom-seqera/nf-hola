@@ -46,7 +46,7 @@ class MetadataTask extends DefaultTask {
             version  : "${project.version}",
             date     : OffsetDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME),
             url      : "https://github.com/${githubOrg}/${project.name}/releases/download/${project.version}/${project.name}-${project.version}.zip",
-            requires : ">=${extension.requireVersion}",
+            requires : ">=${extension.nextflowVersion}",
             sha512sum: computeSha512(project.file(inputFile))
         ]
         project.file(outputFile).text = JsonOutput.prettyPrint(JsonOutput.toJson(metadata))

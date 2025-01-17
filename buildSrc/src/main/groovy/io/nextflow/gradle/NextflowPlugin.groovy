@@ -9,9 +9,9 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.JavaLibraryPlugin
-import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.jvm.tasks.Jar
+import org.gradle.jvm.toolchain.JavaLanguageVersion
 
 /**
  * A gradle plugin for nextflow plugin projects.
@@ -31,13 +31,13 @@ class NextflowPlugin implements Plugin<Project> {
         project.plugins.apply(GroovyPlugin)
         project.plugins.apply(JavaLibraryPlugin)
 
-        project.tasks.withType(JavaCompile).each { task ->
-            task.sourceCompatibility = 17
-            task.targetCompatibility = 17
+        project.java {
+            toolchain.languageVersion = JavaLanguageVersion.of(21)
+            sourceCompatibility = 17    // javac --source
+            targetCompatibility = 17    // javac --target
         }
-        project.tasks.withType(GroovyCompile).each { task ->
-            task.sourceCompatibility = 17
-            task.targetCompatibility = 17
+        project.tasks.withType(JavaCompile).configureEach {
+            options.release = 17        // javac --release
         }
 
         // -----------------------------
@@ -49,7 +49,7 @@ class NextflowPlugin implements Plugin<Project> {
         }
 
         project.afterEvaluate {
-            final nextflowVersion = extension.requireVersion
+            final nextflowVersion = extension.nextflowVersion
 
             project.dependencies {
                 // required compile-time dependencies for nextflow plugins
@@ -65,10 +65,16 @@ class NextflowPlugin implements Plugin<Project> {
                 // test-only dependencies (for writing tests)
                 testImplementation "org.apache.groovy:groovy:4.0.18"
                 testImplementation "io.nextflow:nextflow:${nextflowVersion}"
-                testImplementation ("org.spockframework:spock-core:2.3-groovy-4.0") { exclude group: 'org.codehaus.groovy'; exclude group: 'net.bytebuddy' }
-                testImplementation ('org.spockframework:spock-junit4:2.3-groovy-4.0') { exclude group: 'org.codehaus.groovy'; exclude group: 'net.bytebuddy' }
-//                testImplementation(testFixtures("io.nextflow:nextflow:${nextflowVersion}"))
-//                testImplementation(testFixtures("io.nextflow:nf-commons:${nextflowVersion}"))
+                testImplementation("org.spockframework:spock-core:2.3-groovy-4.0") {
+                    exclude group: 'org.codehaus.groovy';
+                    exclude group: 'net.bytebuddy'
+                }
+                testImplementation('org.spockframework:spock-junit4:2.3-groovy-4.0') {
+                    exclude group: 'org.codehaus.groovy';
+                    exclude group: 'net.bytebuddy'
+                }
+                testImplementation(testFixtures("io.nextflow:nextflow:${nextflowVersion}"))
+                testImplementation(testFixtures("io.nextflow:nf-commons:${nextflowVersion}"))
             }
         }
         // use JUnit 5 platform
@@ -88,6 +94,7 @@ class NextflowPlugin implements Plugin<Project> {
         // extensionPoints - generates extensions.idx file
         project.tasks.register('extensionPoints', ExtensionPointsTask)
         project.tasks.jar.dependsOn << project.tasks.extensionPoints
+        project.tasks.compileTestGroovy.dependsOn << project.tasks.extensionPoints
 
         // packagePlugin - builds the zip file
         project.tasks.register('packagePlugin', PackageTask)

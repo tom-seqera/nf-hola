@@ -1,6 +1,7 @@
 package io.nextflow.gradle
 
 import org.gradle.api.Project
+import org.gradle.api.provider.Property
 
 /**
  * A gradle 'extension' to provide configuration to the
@@ -9,7 +10,7 @@ import org.gradle.api.Project
  * Usage in 'build.gradle'
  * <pre>
  * nextflow {
- *     requireVersion = '24.10.0'
+ *     nextflowVersion = '24.10.0'
  *     plugin {
  *         publisher = 'nextflow'
  *         className = 'com.example.ExamplePlugin'
@@ -23,7 +24,7 @@ class NextflowExtension {
     /**
      * Required nextflow version
      */
-    String requireVersion = '24.11.0-edge'
+    String nextflowVersion = '24.11.0-edge'
 
     /**
      * Plugin-specific configuration

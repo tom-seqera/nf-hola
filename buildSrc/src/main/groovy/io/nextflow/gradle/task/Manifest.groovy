@@ -21,7 +21,7 @@ class Manifest {
         jar.manifest.attributes(
             'Plugin-Id': project.name,
             'Plugin-Version': project.version,
-            'Plugin-Requires': nf.requireVersion
+            'Plugin-Requires': nf.nextflowVersion
         )
         if (plugin.className) {
             jar.manifest.attributes('Plugin-Class': plugin.className)
