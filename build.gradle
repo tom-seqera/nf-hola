@@ -4,20 +4,27 @@ dependencies {
     implementation 'commons-lang:commons-lang:2.6'
 }
 
-// the version of the plugin
+// plugin version
 version = '0.0.3'
 
-nextflow {
+nextflowPlugin {
+    // minimum nextflow version
     nextflowVersion = '25.01.0'
 
-    plugin {
-        publisher = 'nextflow'
-        className = 'com.example.ExamplePlugin'
-//        requirePlugins = ['nf-amazon@>=2.5.1']
+    // plugin metadata
+    publisher = 'nextflow'
+    className = 'com.example.ExamplePlugin'
+    requirePlugins = ['nf-amazon@>=2.5.1']
+    extensionPoints = [
+        'com.example.ExampleFunctions',
+        'com.example.ExampleObserver'
+    ]
 
-        extensionPoints = [
-            'com.example.ExampleFunctions',
-            'com.example.ExampleObserver'
-        ]
+    publishing {
+        github {
+            repository = 'tom-seqera/nf-hola'
+            userName = project.findProperty('github_username')
+            authToken = project.findProperty('github_access_token')
+        }
     }
 }

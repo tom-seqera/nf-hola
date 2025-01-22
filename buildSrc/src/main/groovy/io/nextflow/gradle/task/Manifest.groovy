@@ -15,22 +15,21 @@ class Manifest {
     }
 
     void manifest(Jar jar) {
-        final nf = project.extensions.nextflow
-        final plugin = nf.plugin
+        final config = project.extensions.nextflowPlugin
 
         jar.manifest.attributes(
             'Plugin-Id': project.name,
             'Plugin-Version': project.version,
-            'Plugin-Requires': nf.nextflowVersion
+            'Plugin-Requires': config.nextflowVersion
         )
-        if (plugin.className) {
-            jar.manifest.attributes('Plugin-Class': plugin.className)
+        if (config.className) {
+            jar.manifest.attributes('Plugin-Class': config.className)
         }
-        if (plugin.publisher) {
-            jar.manifest.attributes('Plugin-Provider': plugin.publisher)
+        if (config.publisher) {
+            jar.manifest.attributes('Plugin-Provider': config.publisher)
         }
-        if (!plugin.requirePlugins.isEmpty()) {
-            jar.manifest.attributes('Plugin-Dependencies': plugin.requirePlugins)
+        if (!config.requirePlugins.isEmpty()) {
+            jar.manifest.attributes('Plugin-Dependencies': config.requirePlugins)
         }
     }
 }

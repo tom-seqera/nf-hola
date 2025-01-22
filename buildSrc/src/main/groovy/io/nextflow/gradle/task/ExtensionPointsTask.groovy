@@ -5,13 +5,15 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
+/**
+ * Gradle task to generate extensions.idx file from the list
+ * of classnames specified in build.gradle.
+ */
 class ExtensionPointsTask extends DefaultTask {
     @OutputFile
     final RegularFileProperty outputFile
 
     ExtensionPointsTask() {
-        group = 'Nextflow'
-
         final buildDir = project.layout.buildDirectory.get()
         outputFile = project.objects.fileProperty()
         outputFile.convention(project.provider {
@@ -21,7 +23,7 @@ class ExtensionPointsTask extends DefaultTask {
 
     @TaskAction
     def run() {
-        final plugin = project.extensions.nextflow.plugin
+        final plugin = project.extensions.nextflowPlugin
 
         // write the list of extension points from build.gradle
         // to extensions.idx file

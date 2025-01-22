@@ -22,8 +22,6 @@ class MetadataTask extends DefaultTask {
     final RegularFileProperty outputFile
 
     MetadataTask() {
-        group = 'Nextflow'
-
         final buildDir = project.layout.buildDirectory.get()
         inputFile = project.objects.fileProperty()
         inputFile.convention(project.provider {
@@ -37,16 +35,13 @@ class MetadataTask extends DefaultTask {
     }
 
     @TaskAction
-    void run() {
-        // TODO make configurable
-        final githubOrg = 'nexflow-io'
-
-        final extension = project.extensions.nextflow
+    def run() {
+        final config = project.extensions.nextflowPlugin
         final metadata = [
             version  : "${project.version}",
             date     : OffsetDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME),
-            url      : "https://github.com/${githubOrg}/${project.name}/releases/download/${project.version}/${project.name}-${project.version}.zip",
-            requires : ">=${extension.nextflowVersion}",
+            url      : config.publishing.url(),
+            requires : ">=${config.nextflowVersion}",
             sha512sum: computeSha512(project.file(inputFile))
         ]
         project.file(outputFile).text = JsonOutput.prettyPrint(JsonOutput.toJson(metadata))

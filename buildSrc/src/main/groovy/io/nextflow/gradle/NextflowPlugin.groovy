@@ -1,6 +1,7 @@
 package io.nextflow.gradle
 
 import io.nextflow.gradle.task.ExtensionPointsTask
+import io.nextflow.gradle.task.GithubUploadTask
 import io.nextflow.gradle.task.InstallTask
 import io.nextflow.gradle.task.Manifest
 import io.nextflow.gradle.task.MetadataTask
@@ -23,7 +24,7 @@ class NextflowPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        final extension = project.extensions.create('nextflow', NextflowExtension)
+        final config = project.extensions.create('nextflowPlugin', NextflowPluginConfig)
 
         // -----------------------------
         // Java/Groovy config
@@ -49,7 +50,8 @@ class NextflowPlugin implements Plugin<Project> {
         }
 
         project.afterEvaluate {
-            final nextflowVersion = extension.nextflowVersion
+            config.validate()
+            final nextflowVersion = config.nextflowVersion
 
             project.dependencies {
                 // required compile-time dependencies for nextflow plugins
@@ -104,14 +106,24 @@ class NextflowPlugin implements Plugin<Project> {
         ]
         project.tasks.assemble.dependsOn << project.tasks.packagePlugin
 
-        // generateMeta - creates the meta.json file
-        project.tasks.register('generateMeta', MetadataTask)
-        project.tasks.generateMeta.dependsOn << project.tasks.packagePlugin
-        // TODO should be part of publish, not assemble
-        project.tasks.assemble.dependsOn << project.tasks.generateMeta
-
         // installPlugin - installs plugin to (local) nextflow plugins dir
         project.tasks.register('installPlugin', InstallTask)
         project.tasks.installPlugin.dependsOn << project.tasks.assemble
+
+        project.afterEvaluate {
+            if (config.publishing) {
+                // generateMeta - creates the meta.json file
+                project.tasks.register('generatePluginMeta', MetadataTask)
+                project.tasks.generatePluginMeta.dependsOn << project.tasks.packagePlugin
+                project.tasks.assemble.dependsOn << project.tasks.generatePluginMeta
+
+                // releasePlugin - publishes plugin assets to a github repo
+                project.tasks.register('releasePlugin', GithubUploadTask)
+                project.tasks.releasePlugin.dependsOn << [
+                    project.tasks.packagePlugin,
+                    project.tasks.generatePluginMeta
+                ]
+            }
+        }
     }
 }

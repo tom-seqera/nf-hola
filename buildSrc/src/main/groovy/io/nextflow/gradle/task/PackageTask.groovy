@@ -8,7 +8,7 @@ import org.gradle.api.tasks.bundling.Zip
 class PackageTask extends Zip {
 
     PackageTask() {
-        group = 'Nextflow'
+        group = 'Nextflow Plugin'
         description = 'Package up this Nextflow plugin for deployment'
 
         into('classes') { with project.tasks.jar }

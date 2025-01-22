@@ -9,7 +9,7 @@ import org.gradle.api.tasks.Copy
  */
 class InstallTask extends Copy {
     InstallTask() {
-        group = 'Nextflow'
+        group = 'Nextflow Plugin'
         description = 'Install this plugin into your local Nextflow plugins dir'
 
         final buildDir = project.layout.buildDirectory.get()

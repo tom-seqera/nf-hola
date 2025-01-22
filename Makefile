@@ -15,3 +15,6 @@ test:
 # Install the plugin into local nextflow plugins dir
 install:
 	./gradlew install
+
+release:
+	./gradlew releasePlugin
