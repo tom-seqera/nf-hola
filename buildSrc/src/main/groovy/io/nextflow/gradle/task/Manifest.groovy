@@ -14,7 +14,7 @@ class Manifest {
         this.project = project
     }
 
-    void manifest(Jar jar) {
+    void configure(Jar jar) {
         final config = project.extensions.nextflowPlugin
 
         jar.manifest.attributes(
@@ -25,8 +25,8 @@ class Manifest {
         if (config.className) {
             jar.manifest.attributes('Plugin-Class': config.className)
         }
-        if (config.publisher) {
-            jar.manifest.attributes('Plugin-Provider': config.publisher)
+        if (config.provider) {
+            jar.manifest.attributes('Plugin-Provider': config.provider)
         }
         if (!config.requirePlugins.isEmpty()) {
             jar.manifest.attributes('Plugin-Dependencies': config.requirePlugins)

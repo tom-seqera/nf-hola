@@ -6,6 +6,7 @@ import io.nextflow.gradle.task.InstallTask
 import io.nextflow.gradle.task.Manifest
 import io.nextflow.gradle.task.MetadataTask
 import io.nextflow.gradle.task.PackageTask
+import io.nextflow.gradle.task.PublishJsonIndexTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.GroovyPlugin
@@ -38,6 +39,7 @@ class NextflowPlugin implements Plugin<Project> {
             targetCompatibility = 17    // javac --target
         }
         project.tasks.withType(JavaCompile).configureEach {
+            // note: this has no effect in 'joint' groovy/java compilation mode
             options.release = 17        // javac --release
         }
 
@@ -87,7 +89,7 @@ class NextflowPlugin implements Plugin<Project> {
         // -----------------------------
         project.afterEvaluate {
             def manifest = new Manifest(project)
-            project.tasks.withType(Jar).each(manifest::manifest)
+            project.tasks.withType(Jar).each(manifest::configure)
         }
 
         // -----------------------------
@@ -117,12 +119,28 @@ class NextflowPlugin implements Plugin<Project> {
                 project.tasks.generatePluginMeta.dependsOn << project.tasks.packagePlugin
                 project.tasks.assemble.dependsOn << project.tasks.generatePluginMeta
 
-                // releasePlugin - publishes plugin assets to a github repo
-                project.tasks.register('releasePlugin', GithubUploadTask)
-                project.tasks.releasePlugin.dependsOn << [
+                // publishPlugin - publishes plugin assets to a github repo
+                project.tasks.register('publishPlugin', GithubUploadTask)
+                project.tasks.publishPlugin.dependsOn << [
                     project.tasks.packagePlugin,
                     project.tasks.generatePluginMeta
                 ]
+
+                // updatePluginIndex - updates the central plugins.json index
+                if (config.publishing.updateIndex) {
+                    project.tasks.register('updatePluginIndex', PublishJsonIndexTask)
+                    project.tasks.updatePluginIndex.dependsOn << project.tasks.generatePluginMeta
+                }
+
+                // releasePlugin - all the release/publishing actions
+                project.tasks.register('releasePlugin', {
+                    group = 'Nextflow Plugin'
+                    description = 'publish plugin and update central index'
+                })
+                project.tasks.releasePlugin.dependsOn << project.tasks.publishPlugin
+                if (config.publishing.updateIndex) {
+                    project.tasks.releasePlugin.dependsOn << project.tasks.updatePluginIndex
+                }
             }
         }
     }

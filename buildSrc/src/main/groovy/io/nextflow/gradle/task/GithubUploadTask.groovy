@@ -7,6 +7,10 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.TaskAction
 
+/**
+ * Gradle task to upload assembled plugin and metadata file
+ * to a Github release.
+ */
 class GithubUploadTask extends DefaultTask {
     @InputFile
     final RegularFileProperty zipFile
@@ -36,8 +40,8 @@ class GithubUploadTask extends DefaultTask {
 
         // github client
         def (owner, repo) = config.repositoryParts()
-        final github = new GithubClient(authToken: config.authToken, owner: owner,
-            repo: repo, userName: config.userName)
+        final github = new GithubClient(authToken: config.authToken, userName: config.userName,
+            owner: owner, repo: repo)
 
         // create the github release, if it doesn't already exist
         def release = github.getRelease(version)

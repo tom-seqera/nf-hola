@@ -32,7 +32,7 @@ class NextflowPluginConfig {
     /**
      * Who created/maintains this plugin?
      */
-    String publisher
+    String provider
 
     /**
      * What class should be created when the plugin is loaded?
@@ -61,10 +61,10 @@ class NextflowPluginConfig {
 
     def validate() {
         if (!className) {
-            throw new RuntimeException('nextflow.plugin.className not specified')
+            throw new RuntimeException('nextflowPlugin.className not specified')
         }
-        if (!publisher) {
-            throw new RuntimeException('nextflow.plugin.publisher not specified')
+        if (!provider) {
+            throw new RuntimeException('nextflowPlugin.provider not specified')
         }
     }
 

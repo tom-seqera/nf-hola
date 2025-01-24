@@ -6,8 +6,6 @@ import groovy.util.logging.Slf4j
 /**
  * Simple Github HTTP client
  *
- * Commit & push a file change to a Github repo
- *
  * https://stackoverflow.com/a/63461333/395921
  *
  * @author Paolo Di Tommaso <paolo.ditommaso@gmail.com>
@@ -24,9 +22,9 @@ class GithubClient {
     private Gson gson = new Gson()
 
     private String getEncodedAuthToken() {
-        if( !userName )
+        if (!userName)
             throw new IllegalArgumentException("Missing Github userName")
-        if( !authToken )
+        if (!authToken)
             throw new IllegalArgumentException("Missing Github authToken")
         return "$userName:$authToken".bytes.encodeBase64().toString()
     }
@@ -43,12 +41,12 @@ class GithubClient {
         // Make header settings
         con.setRequestMethod(method)
         con.setRequestProperty("Content-Type", "application/json")
-        con.setRequestProperty("Authorization","Basic ${getEncodedAuthToken()}")
+        con.setRequestProperty("Authorization", "Basic ${getEncodedAuthToken()}")
 
         con.setDoOutput(true)
 
         // Send POST request
-        if( payload ) {
+        if (payload) {
             DataOutputStream output = new DataOutputStream(con.getOutputStream())
             output.writeBytes(payload)
             output.flush()
@@ -73,7 +71,7 @@ class GithubClient {
      *
      * @return the SHA id of the last commit
      */
-    String lastCommitId() {
+    private String lastCommitId() {
         def resp = sendHttpMessage("https://api.github.com/repos/$owner/$repo/branches/$branch", null, 'GET')
         return resp.commit.sha
     }
@@ -84,7 +82,7 @@ class GithubClient {
      * @param file content
      * @return the SHA id of the uploaded content
      */
-    String uploadBlob(String file) {
+    private String uploadBlob(String file) {
         def content = "{\"encoding\": \"base64\", \"content\": \"${file.bytes.encodeBase64().toString()}\"}"
         def resp = sendHttpMessage("https://api.github.com/repos/$owner/$repo/git/blobs", content, 'POST')
         return resp.sha
@@ -98,7 +96,7 @@ class GithubClient {
      * @param lastCommitId the last commit id
      * @return the SHA id of the tree structure
      */
-    String createTree(String fileName, String blobId, String lastCommitId) {
+    private String createTree(String fileName, String blobId, String lastCommitId) {
         def content = "{ \"base_tree\": \"$lastCommitId\", \"tree\": [{\"path\": \"$fileName\",\"mode\": \"100644\",\"type\": \"blob\",\"sha\": \"$blobId\"}]}"
         def resp = sendHttpMessage("https://api.github.com/repos/$owner/$repo/git/trees", content, 'POST')
         return resp.sha
@@ -114,7 +112,7 @@ class GithubClient {
      * @param email the commit author email address
      * @return the SHA id of the commit
      */
-    String createCommit(String treeId, String lastCommitId, String message, String email) {
+    private String createCommit(String treeId, String lastCommitId, String message, String email) {
         def content = "{\"message\": \"$message\", \"author\": {\"name\": \"$userName\", \"email\": \"$email\"}, \"parents\": [\"$lastCommitId\"], \"tree\": \"$treeId\" }"
         def resp = sendHttpMessage("https://api.github.com/repos/$owner/$repo/git/commits", content, 'POST')
         return resp.sha
@@ -126,25 +124,21 @@ class GithubClient {
      * @param commitId
      * @return the response message
      */
-    def updateRef(String commitId) {
+    private def updateRef(String commitId) {
         def content = "{\"ref\": \"refs/heads/$branch\", \"sha\": \"$commitId\"}"
         def resp = sendHttpMessage("https://api.github.com/repos/$owner/$repo/git/refs/heads/$branch", content, 'POST')
         return resp
     }
 
-    void pushChange(File file, String message) {
-        pushChange(file.name, file.text, message)
-    }
-
     void pushChange(String fileName, String content, String message) {
-        if( content==null )
+        if (content == null)
             throw new IllegalArgumentException("Missing content argument")
-        if( !fileName )
+        if (!fileName)
             throw new IllegalArgumentException("Missing fileName argument")
-        if( !email )
+        if (!email)
             throw new IllegalArgumentException("Missing email argument")
 
-        final lastCommit = this.lastCommitId()
+        final lastCommit = lastCommitId()
         final blobId = uploadBlob(content)
         final treeId = createTree(fileName, blobId, lastCommit)
         final commitId = createCommit(treeId, lastCommit, message, email)
@@ -168,7 +162,7 @@ class GithubClient {
         }
     }
 
-    Map createRelease(String version, boolean prerelease=false) {
+    Map createRelease(String version, boolean prerelease = false) {
         final action = "https://api.github.com/repos/${owner}/${repo}/releases"
         final payload = "{\"tag_name\":\"$version\", \"name\": \"Version $version\", \"draft\":false, \"prerelease\":$prerelease}"
         Map resp = sendHttpMessage(action, payload, 'POST')
@@ -180,17 +174,7 @@ class GithubClient {
         return (List) sendHttpMessage(action, null, 'GET')
     }
 
-    Map latestRelease() {
-        final action = "https://api.github.com/repos/${owner}/${repo}/releases/latest"
-        try {
-            return (Map) sendHttpMessage(action, null, 'GET')
-        }
-        catch (Exception e) {
-            return null
-        }
-    }
-    
-    /*
+    /**
      * https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#get-a-release-asset
      */
     InputStream getAsset(String assetId) {
@@ -200,7 +184,7 @@ class GithubClient {
         // Make header settings
         con.setRequestMethod('GET')
         con.setRequestProperty("Content-Type", "application/json")
-        con.setRequestProperty("Authorization","Basic ${getEncodedAuthToken()}")
+        con.setRequestProperty("Authorization", "Basic ${getEncodedAuthToken()}")
         con.setRequestProperty("Accept", "application/octet-stream")
 
         con.setDoOutput(true)
@@ -210,13 +194,13 @@ class GithubClient {
 
     InputStream getReleaseAsset(Map release, String name) {
         if (!release) return null
-        def asset = (Map) release.assets.find{ it.name == name }
+        def asset = (Map) release.assets.find { it.name == name }
         if (!asset) return null
 
         return getAsset((asset.id as Long).toString())
     }
 
-    /*
+    /**
      * https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#upload-a-release-asset
      */
     def uploadReleaseAsset(Map release, File file, mimeType) {
@@ -230,7 +214,7 @@ class GithubClient {
         con.setRequestMethod('POST')
         con.setRequestProperty("Content-Type", mimeType)
         con.setRequestProperty("Content-Length", file.size().toString())
-        con.setRequestProperty("Authorization","Basic ${getEncodedAuthToken()}")
+        con.setRequestProperty("Authorization", "Basic ${getEncodedAuthToken()}")
 
         con.setDoOutput(true)
 
@@ -239,12 +223,10 @@ class GithubClient {
         output.flush()
         output.close()
 
-        def resp = con.responseCode>= 400
-                ? con.getErrorStream().text
-                : con.getInputStream().text
+        def resp = con.responseCode >= 400
+            ? con.getErrorStream().text
+            : con.getInputStream().text
 
         return resp
     }
 }
-
-

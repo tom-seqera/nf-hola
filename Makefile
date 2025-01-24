@@ -16,5 +16,6 @@ test:
 install:
 	./gradlew install
 
+# Publish the plugin
 release:
 	./gradlew releasePlugin

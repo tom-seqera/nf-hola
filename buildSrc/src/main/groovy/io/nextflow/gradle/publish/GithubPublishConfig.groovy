@@ -18,6 +18,11 @@ class GithubPublishConfig {
     String userName
 
     /**
+     * Github email address
+     */
+    String email
+
+    /**
      * Github authentication token
      */
     String authToken
@@ -29,9 +34,6 @@ class GithubPublishConfig {
 
     GithubPublishConfig(Project project) {
         this.project = project
-    }
-
-    def validate() {
     }
 
     // split the 'repository' string into (github_org, repo)
