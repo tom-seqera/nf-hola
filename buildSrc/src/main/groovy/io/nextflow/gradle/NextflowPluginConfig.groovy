@@ -27,7 +27,7 @@ class NextflowPluginConfig {
     /**
      * Minimum required nextflow version
      */
-    String nextflowVersion = '24.11.0-edge'
+    String nextflowVersion = '24.10.3'
 
     /**
      * Who created/maintains this plugin?

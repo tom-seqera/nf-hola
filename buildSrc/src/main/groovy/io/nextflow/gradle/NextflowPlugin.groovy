@@ -11,6 +11,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.JavaLibraryPlugin
+import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.jvm.tasks.Jar
 import org.gradle.jvm.toolchain.JavaLanguageVersion
@@ -22,6 +23,8 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion
  * some plugin-specific tasks.
  */
 class NextflowPlugin implements Plugin<Project> {
+    private static final int JAVA_TOOLCHAIN_VERSION = 21
+    private static final int JAVA_VERSION = 17
 
     @Override
     void apply(Project project) {
@@ -34,14 +37,26 @@ class NextflowPlugin implements Plugin<Project> {
         project.plugins.apply(JavaLibraryPlugin)
 
         project.java {
-            toolchain.languageVersion = JavaLanguageVersion.of(21)
-            sourceCompatibility = 17    // javac --source
-            targetCompatibility = 17    // javac --target
+            toolchain.languageVersion = JavaLanguageVersion.of(JAVA_TOOLCHAIN_VERSION)
         }
-        project.tasks.withType(JavaCompile).configureEach {
-            // note: this has no effect in 'joint' groovy/java compilation mode
-            options.release = 17        // javac --release
+
+        // <HACK>
+        // This is not the best way to set source/target versions, but is currently
+        // needed to work around a small bug in the testFixtures jars published by Nextflow
+        //
+        // It should no longer be needed for Nextflow versions >=25.?.?
+        project.tasks.withType(JavaCompile).configureEach { task ->
+            if (!task.name.startsWith('compileTest')) {
+                options.release = JAVA_VERSION
+                sourceCompatibility = JAVA_VERSION
+                targetCompatibility = JAVA_VERSION
+            }
         }
+        project.tasks.withType(GroovyCompile).configureEach { task ->
+                task.sourceCompatibility = JAVA_VERSION
+                task.targetCompatibility = JAVA_VERSION
+        }
+        // </HACK>
 
         // -----------------------------
         // Common dependencies
